@@ -4,28 +4,32 @@ import { useEffect } from "react";
 
 const CountDown = () => {
   const [selectedTime, setselectedTime] = useState(null);
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [remainingTime, setRemainingTime] = useState(null);
-  const [start, setStart] = useState(false)
-  const timerRef = useRef();
+  const [startTime, setStartTime] = useState(null);
+  const [now, setNow] = useState(null);
+  const intervalRef = useRef(null);
 
+  function handleStart() {
+    setStartTime(Date.now());
+    setNow(Date.now());
 
-  const startTimer = () => {
-    
-      const timer = setInterval(() => {
-        setCurrentTime(new Date());
-        setRemainingTime(selectedTime - new Date());
-      }, 1000);
+    clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      setNow(Date.now());
+    }, 10);
+  }
 
-      setStart(true)
+  function handleStop() {
+    clearInterval(intervalRef.current);
+  }
 
-      timerRef.current = timer;
-      return () => {
-        clearInterval(timerRef.current);
-      };
-    
-  };
-  const stopTimer = () => {setStart(false)}
+  let secondsPassed = 0;
+  if (startTime != null && now != null) {
+    secondsPassed = (now - startTime) / 1000;
+  }
+  let hoursDifference = 0;
+  if (selectedTime != null && startTime != null) {
+    hoursDifference = Math.abs((selectedTime - startTime) / (1000 * 60 * 60)); // Calculate the hours difference
+  }
 
 
 
@@ -35,15 +39,15 @@ const CountDown = () => {
         value={selectedTime}
         onChange={(newTime) => {
           setselectedTime(newTime);
-          setRemainingTime(new Date() - newTime);
         }}
         views={["hours", "minutes", "seconds"]}
       />
-      <button onClick={startTimer}>Start</button>
-      <button onClick={stopTimer}> Stop</button>
-      <p>SelectedTime : {selectedTime && start ? selectedTime.toString() : "00:00:00"}</p>
-      <p>CurrentTime : {currentTime && start? currentTime.toString() : "00:00:00" }</p>
-      <p>Remaining Time: {remainingTime && start? remainingTime : "00:00:00"}</p>
+      <button onClick={handleStart}>Start</button>
+      <button onClick={handleStop}> Stop</button>
+      <p>SelectedTime : {selectedTime && now ? new Date(selectedTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : "00:00:00"}</p>
+      <p>StartTime : {startTime && now ? new Date(startTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : "00:00:00" }</p>
+      <p>Remaining Time:  {selectedTime && now ? new Date(selectedTime - secondsPassed * 1000).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : "00:00:00"}</p>
+      <p>Hours Difference: {selectedTime && now ? new Date(hoursDifference).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : 0}</p>
     </>
   );
 };
